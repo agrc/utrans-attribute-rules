@@ -1,0 +1,11 @@
+-r requirements.txt
+pylint-quotes==0.2.*
+pylint==2.6.*
+pytest-cov==2.10.*
+pytest-instafail==0.4.*
+pytest-isort==1.2.*
+pytest-pylint==0.18.*
+pytest-watch==4.2.*
+pytest==6.1.*
+yapf==0.30.*
+isort==5.6.*
