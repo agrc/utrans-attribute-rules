@@ -5,10 +5,11 @@ well.py
 A module that holds the rules for the roads
 '''
 
-from . import common
 from config import config
-from services.loader import load_rule_for
 from models.ruletypes import Calculation, Constant, Constraint
+from services.loader import load_rule_for
+
+from . import common
 
 TABLE = 'Roads_Edit'
 FOLDER = 'roads'
