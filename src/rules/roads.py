@@ -29,11 +29,11 @@ toaddress_left_calculation.triggers = [config.triggers.insert, config.triggers.u
 toaddress_right_calculation = Calculation('From Address Right', 'TOADDR_R', common.set_null_as_zero('TOADDR_R'))
 toaddress_right_calculation.triggers = [config.triggers.insert, config.triggers.update]
 
-# name_calculation = Calculation('Name', 'NAME', 'Upper(\'NAME\')')
-# alias_name_calculation = Calculation('Alias Name', 'A1_NAME', 'Upper(\'A1_AME\')')
-# alias_alternate_name_calculation = Calculation('Alternate Alias Name', 'A2_NAME', 'Upper(\'A2_NAME\')')
+name_calculation = Calculation('Name', 'NAME', 'Upper(\'NAME\')')
+alias_name_calculation = Calculation('Alias Name', 'A1_NAME', 'Upper(\'A1_AME\')')
+alias_alternate_name_calculation = Calculation('Alternate Alias Name', 'A2_NAME', 'Upper(\'A2_NAME\')')
 
-# predir_domain_constraint = Constraint('Prefix direction', 'PREDIR', common.constrain_to_domain('PREDIR', allow_null=True, domain='PreDirDomainName'))
+predir_domain_constraint = Constraint('Prefix direction', 'PREDIR', common.constrain_to_domain('PREDIR', allow_null=True, domain='PreDirDomainName'))
 
 RULES = [
     fullname_calculation,
@@ -41,8 +41,8 @@ RULES = [
     fromaddress_right_calculation,
     toaddress_left_calculation,
     toaddress_right_calculation,
-    # name_calculation,
-    # alias_name_calculation,
-    # alias_alternate_name_calculation,
-    # predir_domain_constraint
+    name_calculation,
+    alias_name_calculation,
+    alias_alternate_name_calculation,
+    predir_domain_constraint
 ]
