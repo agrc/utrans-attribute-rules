@@ -30,7 +30,7 @@ toaddress_right_calculation = Calculation('From Address Right', 'TOADDR_R', comm
 toaddress_right_calculation.triggers = [config.triggers.insert, config.triggers.update]
 
 name_calculation = Calculation('Name', 'NAME', 'Upper(\'NAME\')')
-alias_name_calculation = Calculation('Alias Name', 'A1_NAME', 'Upper(\'A1_AME\')')
+alias_name_calculation = Calculation('Alias Name', 'A1_NAME', 'Upper(\'A1_NAME\')')
 alias_alternate_name_calculation = Calculation('Alternate Alias Name', 'A2_NAME', 'Upper(\'A2_NAME\')')
 
 predir_domain_constraint = Constraint('Prefix direction', 'PREDIR', common.constrain_to_domain('PREDIR', allow_null=True, domain='PreDirDomainName'))
