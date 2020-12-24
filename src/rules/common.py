@@ -30,7 +30,7 @@ return iif(isempty($feature.{0}) || lower($feature.{0}) == '<null>', {{
 }}, true);'''
 
 CONVERT_NULL_TO_ZERO = '''
-IIf(isempty($feature.{0}) || $feature.{0} == <null>, 0, true);
+iif(isempty($feature.{0}) || $feature.{0} == '<null>', 0, true);
 '''
 
 
