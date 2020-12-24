@@ -89,6 +89,51 @@ def get_rules(connection, specific_rule=None):
     return [rules[specific_rule]]
 
 
+def create_tables(tables, connection):
+    for table_name in tables:
+        print('creating {}'.format(table_name))
+        try:
+            arcpy.management.CreateTable(connection, table_name)
+
+            field_metas = tables[table_name]
+
+            for field_meta in field_metas:
+                import pdb
+                pdb.set_trace()
+                arcpy.management.AddField(**field_meta)
+        except Exception as error:
+            print('skipping {}'.format(table_name))
+            raise error
+
+
+def update_version(connection, version):
+    table = str(Path(connection) / 'version_information')
+    if not arcpy.Exists(table):
+        version_table = {
+            'version_information': [
+                {
+                    'in_table': table,
+                    'field_name': 'Name',
+                    'field_type': 'TEXT',
+                    'field_length': 255
+                },
+                {
+                    'in_table': table,
+                    'field_name': 'Version',
+                    'field_type': 'TEXT',
+                    'field_length': 255
+                },
+                {
+                    'in_table': table,
+                    'field_name': 'Date',
+                    'field_type': 'DATE',
+                },
+            ]
+        }
+
+        create_tables(version_table, connection)
+
+    with arcpy.da.InsertCursor(in_table=table, field_names=['name', 'version', 'date']) as cursor:
         date = datetime.datetime.now()
         date_string = str(date).split(' ')[0]
         cursor.insertRow(('attribute rules', version, date_string))
