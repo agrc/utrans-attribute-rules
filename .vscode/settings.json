@@ -37,6 +37,7 @@
     "instafail",
     "isort",
     "keycodes",
+    "metas",
     "pylint",
     "pytest",
     "ruletypes",
