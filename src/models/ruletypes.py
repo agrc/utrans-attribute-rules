@@ -8,7 +8,7 @@ A module that holds the types of rules
 from config import config
 
 
-class BaseType(object):
+class BaseType():
 
     def __init__(self):
         self.type = config.rule_types.calculation
