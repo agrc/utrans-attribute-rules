@@ -7,7 +7,7 @@
 
     ```py
     import arcpy
-    arcpy.management.EnableEnterpriseGeodatabase(r'...\utrans-attribute-rules\pro-project\localhost.sde', r'C:\Program Files\ESRI\License10.6\sysgen\keycodes')
+    arcpy.management.EnableEnterpriseGeodatabase(r'...\utrans-attribute-rules\pro-project\localhost@utrans.sde', r'C:\Program Files\ESRI\License10.6\sysgen\keycodes')
     ```
 
     _If you receive errors, you may need to execute the following sql_
@@ -20,10 +20,27 @@
     SET READ_COMMITTED_SNAPSHOT ON
     ```
 
-1. import the XML Workspace for the existing UTRANS database
+1. import the XML Workspace for the existing UTRANS roads data
 
     ```py
-    arcpy.management.ImportXMLWorkspaceDocument(r'...\utrans-attribute-rules\pro-project\localhost.sde', r'...\utrans-attribute-rules\data\STAGING.XML', 'SCHEMA_ONLY', None)
+    arcpy.management.ImportXMLWorkspaceDocument(r'...\utrans-attribute-rules\pro-project\localhost@utrans.sde', r'...\utrans-attribute-rules\data\roads_edit.XML', 'DATA', None)
+    ```
+
+1. import the reference data from [open sgid](https://gis.utah.gov/sgid/open-sgid/)
+
+    1. County boundaries
+    1. Metro Townships
+    1. Municipal boundaries
+    1. Utah state boundary
+    1. Zip code boundaries
+    1. National Grid
+    1. Address system quadrants
+
+    ```py
+    arcpy.env.workspace = r' ...\agrc@opensgid.sde'
+    in_features = ['opensgid.boundaries.county_boundaries','opensgid.boundaries.metro_townships','opensgid.boundaries.municipal_boundaries','opensgid.boundaries.state_boundary','opensgid.boundaries.zip_code_areas','opensgid.indices.national_grid','opensgid.location.address_system_quadrants']
+    out_location = r'...\utrans-attribute-rules\pro-project\localhost@utrans.sde'
+    arcpy.FeatureClassToGeodatabase_conversion(in_features, out_location)
     ```
 
 1. Create a python conda workspace for the project
@@ -47,16 +64,6 @@
 ## Installation
 
 ### Database Migrations
-
-#### Add reference data
-
-1. County boundaries
-1. Address system quadrants
-1. National Grid
-1. Metro Townships
-1. Municipal boundaries
-1. Zip code boundaries
-1. Utah state boundary
 
 ### Attribute Rules
 
