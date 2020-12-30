@@ -28,15 +28,16 @@
 
 1. import the reference data from [open sgid](https://gis.utah.gov/sgid/open-sgid/)
 
-    1. County boundaries
-    1. Metro Townships
-    1. Municipal boundaries
-    1. Utah state boundary
-    1. Zip code boundaries
-    1. National Grid
-    1. Address system quadrants
+    - County boundaries
+    - Metro Townships
+    - Municipal boundaries
+    - Utah state boundary
+    - Zip code boundaries
+    - National Grid
+    - Address system quadrants
 
     ```py
+    import arcpy
     arcpy.env.workspace = r' ...\agrc@opensgid.sde'
     in_features = ['opensgid.boundaries.county_boundaries','opensgid.boundaries.metro_townships','opensgid.boundaries.municipal_boundaries','opensgid.boundaries.state_boundary','opensgid.boundaries.zip_code_areas','opensgid.indices.national_grid','opensgid.location.address_system_quadrants']
     out_location = r'...\utrans-attribute-rules\pro-project\localhost@utrans.sde'
