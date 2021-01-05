@@ -68,7 +68,7 @@
 
 ### Attribute Rules
 
-1. add `localhost@utrans.sde`, `stage.sde`, and `prod.sde` to the pro-project
+1. add `localhost@utrans.sde`, `stage@utrans.sde`, and `prod@utrans.sde` to the pro-project
 1. Install attribute rules
    - `python ar.py update --env=local, dev, prod`
 
