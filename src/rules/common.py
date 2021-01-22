@@ -29,8 +29,10 @@ return iif(isempty($feature.{0}) || lower($feature.{0}) == '<null>', {{
     'errorMessage': '{0} must not be empty.'
 }}, true);'''
 
-CONVERT_NULL_TO_ZERO = '''iif(isempty($feature.{0}) || $feature.{0} == '<null>', 0, $feature.{0});
+CONVERT_NULL_TO_ZERO = '''
+iif(isempty($feature.{0}) || $feature.{0} == '<null>', 0, true);
 '''
+
 
 def constrain_to_domain(field, allow_null=True, domain=None):
     if domain is None:
