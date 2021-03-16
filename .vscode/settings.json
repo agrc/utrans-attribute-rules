@@ -37,11 +37,12 @@
     "instafail",
     "isort",
     "keycodes",
+    "metas",
     "pylint",
     "pytest",
     "ruletypes",
     "sysgen",
     "utrans",
     "yapf"
-  ]
+  ],
 }

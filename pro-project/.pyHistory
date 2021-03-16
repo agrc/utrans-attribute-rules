@@ -1,0 +1,18 @@
+﻿table = "Roads_Edit"
+disabled_rule_value = 'rule disabled'     calculated_attribute = 'FULLNAME'     fields = ['NAME', 'POSTTYPE', 'POSTDIR', TEST_ATTRIBUTE]     values = [         [None, None, None, disabled_rule_value],         ['', '', '', disabled_rule_value],         [' ', ' ', ' ', disabled_rule_value]     ]
+disabled_rule_value = 'rule disabled' calculated_attribute = 'FULLNAME' fields = ['NAME', 'POSTTYPE', 'POSTDIR', TEST_ATTRIBUTE] values = [     [None, None, None, disabled_rule_value],     ['', '', '', disabled_rule_value],     [' ', ' ', ' ', disabled_rule_value]     ]
+disabled_rule_value = 'rule disabled'     calculated_attribute = 'FULLNAME'     fields = ['NAME', 'POSTTYPE', 'POSTDIR', 'UTRANS_NOTES']     values = [         [None, None, None, disabled_rule_value],         ['', '', '', disabled_rule_value],         [' ', ' ', ' ', disabled_rule_value]     ]
+disabled_rule_value = 'rule disabled'     calculated_attribute = 'FULLNAME'     fields = ['NAME', 'POSTTYPE', 'POSTDIR', 'UTRANS_NOTES']     values = [         [None, None, None, disabled_rule_value],         ['', '', '', disabled_rule_value],         ['
+disabled_rule_value = 'rule disabled' TEST_ATTRIBUTE = 'UTRANS_NOTES' calculated_attribute = 'FULLNAME' fields = ['NAME', 'POSTTYPE', 'POSTDIR', TEST_ATTRIBUTE] values = [     [None, None, None, disabled_rule_value],     ['', '', '', disabled_rule_value],     [' ', ' ', ' ', disabled_rule_value] ]
+TABLE = table
+with arcpy.da.InsertCursor(TABLE, fields) as cursor:     for value in values:         cursor.insertRow(value)
+edit = arcpy.da.Editor("Roads_Edit")
+edit = arcpy.da.Editor("C:\\Users\\gbunce\\AppData\\Roaming\\Esri\\ArcGISPro\\Favorites\\localhost@utrans_old.sde")
+edit.startEditing(False, True)
+edit.startOperation()
+edit.stopOperation()
+edit.stopEditing(True)
+edit = arcpy.da.Editor("C:\\Users\\gbunce\\AppData\\Roaming\\Esri\\ArcGISPro\\Favorites\\localhost@utrans.sde") edit.startEditing(False, True) edit.startOperation() edit.stopOperation() edit.stopEditing(True)
+edit = arcpy.da.Editor("C:\\Users\\gbunce\\AppData\\Roaming\\Esri\\ArcGISPro\\Favorites\\localhost@utrans.sde")
+edit.startEditing(False, True) edit.startOperation()
+edit.stopOperation() edit.stopEditing(True)
