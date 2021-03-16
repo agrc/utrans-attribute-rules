@@ -7,32 +7,25 @@ A module that tests the facility attribute rules
 
 import os
 
+import arcpy
 import pytest
 from arcgisscripting import ExecuteError  # pylint: disable=no-name-in-module
 
-import arcpy
-
 table_name = 'Roads_Edit'
-sde = os.path.join(os.path.dirname(__file__), '..', 'pro-project', 'localhost.sde')
+sde = os.path.join(os.path.dirname(__file__), '..', 'pro-project', 'localhost@utrans.sde')
 TABLE = os.path.join(sde, table_name)
+TEST_ATTRIBUTE = 'UTRANS_NOTES'
 
 # pragma pylint: disable=no-member
 
-wkt = (
-    'POLYGON ((419771.30999999959 4476140.9299999997, 421271.66000000015 4474303, 425713.20999999996 4477928.7599999998, 424212.86000000034 '
-    '4479766.6799999997, 419771.30999999959 4476140.9299999997)), 26912)'
-)
-
 rules = [
-    'rule.names',
+    'FULLNAME',
 ]
 
 
 def cleanup():
     print('deleting test data')
-    with arcpy.da.UpdateCursor(TABLE, ['OID@'], where_clause="FacilityName IN ('0', '1')") as cursor:
-        for _ in cursor:
-            cursor.deleteRow()
+    #arcpy.management.TruncateTable(TABLE)
 
 
 def disable_rules(rules):
@@ -62,96 +55,134 @@ def teardown_function():
     cleanup()
 
 
-def test_guid_calculation():
-    test_attribute = 'FacilityName'
-    calculated_attribute = 'GUID'
-    disabled_rule_value = '0'
-    enabled_rule_value = '1'
+#: name   posttype   postdir   expected_value
+#: 100                 S         100 S
+#: 100      RD         S         100 RD S
+#: MAIN     ST                   MAIN ST
+#: MAIN                          MAIN
+#:          ST         S         (empty)
 
-    rule_name = 'Constant.Facility.Guid'
+#: run test with all fields empty.
+def test_fullname_empty():
+    disabled_rule_value = 'rule disabled'
+    calculated_attribute = 'FULLNAME'
+    fields = ['NAME', 'POSTTYPE', 'POSTDIR', TEST_ATTRIBUTE]
+    values = [
+        [None, None, None, disabled_rule_value],
+        ['', '', '', disabled_rule_value],
+        [' ', ' ', ' ', disabled_rule_value]
+    ]
 
-    with arcpy.da.InsertCursor(TABLE, [test_attribute]) as cursor:
-        cursor.insertRow([disabled_rule_value])
+    #: run the test with rules disabled - setup_function run by pytest disables the rules each time
+    with arcpy.da.InsertCursor(TABLE, fields) as cursor:
+        for value in values:
+            cursor.insertRow(value)
 
-    with arcpy.da.SearchCursor(TABLE, [calculated_attribute], where_clause="{}='{}'".format(test_attribute, disabled_rule_value)) as cursor:
+    with arcpy.da.SearchCursor(TABLE, [calculated_attribute], where_clause=f"{TEST_ATTRIBUTE}='{disabled_rule_value}'") as cursor:
         for name, in cursor:
             assert name is None
 
-    arcpy.management.EnableAttributeRules(TABLE, rule_name)
+    #: run the test with rules enabled - also enables the rules
+    for rule in rules:
+        arcpy.management.EnableAttributeRules(TABLE, rule)
 
-    with arcpy.da.InsertCursor(TABLE, [test_attribute]) as cursor:
-        cursor.insertRow([enabled_rule_value])
+    enabled_rule_value = 'rule enabled'
+    values = [
+    [None, None, None, enabled_rule_value],
+    ['', '', '', enabled_rule_value],
+    [' ', ' ', ' ', enabled_rule_value]
+    ]
 
-    with arcpy.da.SearchCursor(TABLE, [calculated_attribute], where_clause="{}='{}'".format(test_attribute, enabled_rule_value)) as cursor:
+    with arcpy.da.InsertCursor(TABLE, fields) as cursor:
+        for value in values:
+            cursor.insertRow(value)
+
+    with arcpy.da.SearchCursor(TABLE, [calculated_attribute], where_clause=f"{TEST_ATTRIBUTE}='{enabled_rule_value}'") as cursor:
         for name, in cursor:
-            assert name is not None
+            assert name is None
 
 
-def test_calculation():
-    test_attribute = 'FacilityName'
-    calculated_attribute = 'FacilityState'
-    disabled_rule_value = '0'
-    enabled_rule_value = '1'
 
-    rule_name = 'Constant.Facility.State'
+def test_fullname_missing_posttype():
+    assert True == False
 
-    with arcpy.da.InsertCursor(TABLE, [test_attribute, 'SHAPE@WKT']) as cursor:
-        cursor.insertRow([disabled_rule_value, wkt])
+def test_fullname_missing_postdir():
+    assert True == False
 
-    with arcpy.da.SearchCursor(TABLE, [calculated_attribute], where_clause="{}='{}'".format(test_attribute, disabled_rule_value)) as cursor:
-        for value, in cursor:
-            print('disabled value: {}'.format(value))
-            assert value is None
+def test_fullname_missing_name():
+    assert True == False
 
-    arcpy.management.EnableAttributeRules(TABLE, rule_name)
-
-    with arcpy.da.InsertCursor(TABLE, [test_attribute]) as cursor:
-        cursor.insertRow([enabled_rule_value])
-
-    with arcpy.da.SearchCursor(TABLE, [calculated_attribute], where_clause="{}='{}'".format(test_attribute, enabled_rule_value)) as cursor:
-        for value, in cursor:
-            assert value == 'UT'
+def test_fullname_has_all_required_fields():
+    assert True == False
 
 
-def test_domain_constraint():
-    test_attribute = 'FacilityName'
-    constraint_attribute = 'CountyFIPS'
-    disabled_rule_value = '0'
-    enabled_rule_value = '1'
 
-    rule_name = 'Constraint.Facility.FIPS'
 
-    with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
-        cursor.insertRow([123, disabled_rule_value])
+# def test_fullname_empty_calculation():
+#     test_attribute = 'FacilityName'
+#     calculated_attribute = 'GUID'
+#     disabled_rule_value = '0'
+#     enabled_rule_value = '1'
 
-    with arcpy.da.SearchCursor(TABLE, [constraint_attribute], where_clause="{}='{}'".format(test_attribute, disabled_rule_value)) as cursor:
-        print('searching for inserted value')
-        value, = next(cursor)
-        print('disabled value: {}'.format(value))
-        assert value == 123
+#     rule_name = 'Constant.Facility.Guid'
 
-    arcpy.management.EnableAttributeRules(TABLE, rule_name)
+#     with arcpy.da.InsertCursor(TABLE, [test_attribute]) as cursor:
+#         cursor.insertRow([disabled_rule_value])
 
-    with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
-        print('inserting into table with enabled rule')
-        with pytest.raises(Exception):
-            #: too small
-            cursor.insertRow((49000, enabled_rule_value))
+#     with arcpy.da.SearchCursor(TABLE, [calculated_attribute], where_clause="{}='{}'".format(test_attribute, disabled_rule_value)) as cursor:
+#         for name, in cursor:
+#             assert name is None
 
-    with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
-        with pytest.raises(Exception):
-            #: too even
-            cursor.insertRow((49002, enabled_rule_value))
+#     arcpy.management.EnableAttributeRules(TABLE, rule_name)
 
-    with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
-        with pytest.raises(Exception):
-            #: too big
-            cursor.insertRow((49059, enabled_rule_value))
+#     with arcpy.da.InsertCursor(TABLE, [test_attribute]) as cursor:
+#         cursor.insertRow([enabled_rule_value])
 
-    with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
-        cursor.insertRow((49003, enabled_rule_value))
+#     with arcpy.da.SearchCursor(TABLE, [calculated_attribute], where_clause="{}='{}'".format(test_attribute, enabled_rule_value)) as cursor:
+#         for name, in cursor:
+#             assert name is not None
 
-    with arcpy.da.SearchCursor(TABLE, [constraint_attribute], where_clause="{}='{}'".format(test_attribute, enabled_rule_value)) as cursor:
-        print('searching for inserted value')
-        value, = next(cursor)
-        assert value == 49003
+
+
+# def test_domain_constraint():
+#     test_attribute = 'FacilityName'
+#     constraint_attribute = 'CountyFIPS'
+#     disabled_rule_value = '0'
+#     enabled_rule_value = '1'
+
+#     rule_name = 'Constraint.Facility.FIPS'
+
+#     with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
+#         cursor.insertRow([123, disabled_rule_value])
+
+#     with arcpy.da.SearchCursor(TABLE, [constraint_attribute], where_clause="{}='{}'".format(test_attribute, disabled_rule_value)) as cursor:
+#         print('searching for inserted value')
+#         value, = next(cursor)
+#         print('disabled value: {}'.format(value))
+#         assert value == 123
+
+#     arcpy.management.EnableAttributeRules(TABLE, rule_name)
+
+#     with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
+#         print('inserting into table with enabled rule')
+#         with pytest.raises(Exception):
+#             #: too small
+#             cursor.insertRow((49000, enabled_rule_value))
+
+#     with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
+#         with pytest.raises(Exception):
+#             #: too even
+#             cursor.insertRow((49002, enabled_rule_value))
+
+#     with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
+#         with pytest.raises(Exception):
+#             #: too big
+#             cursor.insertRow((49059, enabled_rule_value))
+
+#     with arcpy.da.InsertCursor(TABLE, [constraint_attribute, test_attribute]) as cursor:
+#         cursor.insertRow((49003, enabled_rule_value))
+
+#     with arcpy.da.SearchCursor(TABLE, [constraint_attribute], where_clause="{}='{}'".format(test_attribute, enabled_rule_value)) as cursor:
+#         print('searching for inserted value')
+#         value, = next(cursor)
+#         assert value == 49003
