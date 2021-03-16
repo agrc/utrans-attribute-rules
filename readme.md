@@ -47,13 +47,19 @@
 1. Create a python conda workspace for the project
 
     ```sh
-    conda create --clone arcgispro-py3 --name utrans
+    conda create --name utrans
     ```
 
 1. Activate the environment
 
     ```sh
     activate utrans
+    ```
+
+1. install [arcpy](https://pro.arcgis.com/en/pro-app/latest/arcpy/get-started/installing-arcpy.htm)
+
+    ```sh
+    conda install arcpy -c esri
     ```
 
 1. install the development requirements
