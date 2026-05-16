@@ -7,12 +7,11 @@ A module that acts as the base class for all rules
 
 import os
 
+import arcpy
 from arcgisscripting import ExecuteError  # pylint: disable=no-name-in-module
 
-import arcpy
 
-
-class RuleGroup(object):
+class RuleGroup():
 
     def __init__(self, sde, table, metas):
         self.name = table
@@ -44,12 +43,16 @@ class RuleGroup(object):
                 exists = False
 
             if not exists:
+                editable = 'EDITABLE'
+                if rule.editable == 'no':
+                    editable = 'NONEDITABLE'
+
                 args = {
                     'in_table': self.table_path,
                     'name': rule.rule_name,
                     'type': rule.type,
                     'script_expression': rule.arcade,
-                    'is_editable': rule.editable,
+                    'is_editable': editable,
                     'triggering_events': rule.triggers,
                     'description': rule.description,
                     'subtype': '',

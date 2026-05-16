@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # * coding: utf8 *
-'''
+"""
 ar
 
 Usage:
@@ -13,41 +13,134 @@ Options:
     --env=<env>     local, dev, prod
     -h --help       Shows this screen
     -v --version    Shows the version
-'''
+"""
 
 import os
 from datetime import datetime
+from pathlib import Path
 
+import arcpy
 from arcgisscripting import ExecuteError  # pylint: disable=no-name-in-module
 from docopt import docopt
 
-import arcpy
 from config.config import get_sde_path_for
 from models.rule import RuleGroup
 from rules import roads
 
 VERSION = '1.0.0'
 
-def get_rules(sde):
+
+def get_rules(connection, specific_rule=None):
+    if specific_rule == 'ALL':
+        tables = [
+            roads.TABLE,
+        ]
+
+        for table in tables:
+            table = str(Path(connection) / table)
+            attribute_rules = arcpy.Describe(table).attributeRules
+
+            calculation_rules = ';'.join([ar.name for ar in attribute_rules if 'Calculation' in ar.type])
+            constraint_rules = ';'.join([ar.name for ar in attribute_rules if 'Constraint' in ar.type])
+
+            if calculation_rules:
+                print('  deleting calculation rules: {}'.format(calculation_rules))
+                try:
+                    arcpy.management.DeleteAttributeRule(
+                        in_table=table,
+                        names=calculation_rules,
+                        type='CALCULATION',
+                    )
+                    print('    deleted')
+                except ExecuteError as error:
+                    message, = error.args
+
+                    if message.startswith('ERROR 002556'):
+                        print('    rule already deleted, skipping...')
+                    else:
+                        raise error
+
+            if constraint_rules:
+                print('  deleting constraint rules {}'.format(constraint_rules))
+                try:
+                    arcpy.management.DeleteAttributeRule(
+                        in_table=table,
+                        names=constraint_rules,
+                        type='CONSTRAINT',
+                    )
+                    print('    deleted')
+                except ExecuteError as error:
+                    message, = error.args
+
+                    if message.startswith('ERROR 002556'):
+                        print('    rule already deleted, skipping...')
+                    else:
+                        raise error
+
+        return []
+
     roads_rules = RuleGroup(sde, roads.TABLE, roads.RULES)
 
-    rules = {
-        'roads': roads_rules,
-    }
+    if specific_rule is None:
+        return [roads_rules]
 
-    return [rules]
+    rules = {'roads': roads_rules}
+
+    return [rules[specific_rule]]
 
 
-def update_version(sde, version):
-    with arcpy.da.InsertCursor(in_table=os.path.join(sde, 'Version_Information'), field_names=['name', 'version', 'date']) as cursor:
+def create_tables(tables, connection):
+    for table_name in tables:
+        print('creating {}'.format(table_name))
+        try:
+            arcpy.management.CreateTable(connection, table_name)
+
+            field_metas = tables[table_name]
+
+            for field_meta in field_metas:
+                import pdb
+                pdb.set_trace()
+                arcpy.management.AddField(**field_meta)
+        except Exception as error:
+            print('skipping {}'.format(table_name))
+            raise error
+
+
+def update_version(connection, version):
+    table = str(Path(connection) / 'version_information')
+    if not arcpy.Exists(table):
+        version_table = {
+            'version_information': [
+                {
+                    'in_table': table,
+                    'field_name': 'Name',
+                    'field_type': 'TEXT',
+                    'field_length': 255
+                },
+                {
+                    'in_table': table,
+                    'field_name': 'Version',
+                    'field_type': 'TEXT',
+                    'field_length': 255
+                },
+                {
+                    'in_table': table,
+                    'field_name': 'Date',
+                    'field_type': 'DATE',
+                },
+            ]
+        }
+
+        create_tables(version_table, connection)
+
+    with arcpy.da.InsertCursor(in_table=table, field_names=['name', 'version', 'date']) as cursor:
         date = datetime.datetime.now()
         date_string = str(date).split(' ')[0]
         cursor.insertRow(('attribute rules', version, date_string))
 
 
 if __name__ == '__main__':
-    '''Main entry point for program. Parse arguments and pass to engine module
-    '''
+    '''Main entry point for program. Parse arguments and pass to engine module'''
     args = docopt(__doc__, version=VERSION)
 
     sde = get_sde_path_for(args['--env'])
